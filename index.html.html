@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omar Dental — AI Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #f0f4f8;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.widget {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 620px;
+}
+
+/* HEADER */
+.header {
+  background: #1a6b5e;
+  padding: 18px 20px;
+  flex-shrink: 0;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.avatar {
+  width: 48px; height: 48px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  flex-shrink: 0;
+}
+.header-info { flex: 1; }
+.clinic-title {
+  font-size: 16px; font-weight: 700;
+  color: #fff; line-height: 1.2;
+}
+.clinic-sub {
+  font-size: 12px; color: rgba(255,255,255,0.7);
+  margin-top: 2px;
+}
+.online-badge {
+  display: flex; align-items: center; gap: 5px;
+  margin-top: 4px;
+}
+.online-dot {
+  width: 7px; height: 7px;
+  background: #4ade80;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.online-text { font-size: 11px; color: rgba(255,255,255,0.75); }
+
+/* CLINIC INFO BAR */
+.info-bar {
+  background: #f0f9f7;
+  border-bottom: 1px solid #e0f0ed;
+  padding: 10px 16px;
+  display: flex;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.info-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11.5px; color: #2d7a6a; font-weight: 500;
+}
+
+/* QUICK BUTTONS */
+.quick-row {
+  padding: 10px 14px;
+  display: flex; gap: 7px; overflow-x: auto;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+.quick-row::-webkit-scrollbar { display: none; }
+.qbtn {
+  flex-shrink: 0;
+  padding: 6px 13px;
+  border-radius: 20px;
+  background: #f0f9f7;
+  border: 1px solid #c8e8e3;
+  color: #1a6b5e;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+}
+.qbtn:hover { background: #1a6b5e; color: #fff; border-color: #1a6b5e; }
+
+/* MESSAGES */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fafafa;
+}
+.messages::-webkit-scrollbar { width: 3px; }
+.messages::-webkit-scrollbar-thumb { background: #ddd; border-radius: 99px; }
+
+.msg { display: flex; gap: 8px; align-items: flex-end; }
+.msg.bot { align-self: flex-start; max-width: 88%; }
+.msg.user { align-self: flex-end; max-width: 80%; flex-direction: row-reverse; }
+
+.msg-icon {
+  width: 30px; height: 30px;
+  background: #1a6b5e;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+
+.msg-content { display: flex; flex-direction: column; gap: 3px; }
+
+.bubble {
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.msg.bot .bubble {
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: 4px 18px 18px 18px;
+  border: 1px solid #eee;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.msg.user .bubble {
+  background: #1a6b5e;
+  color: #fff;
+  border-radius: 18px 4px 18px 18px;
+}
+.msg-time { font-size: 10.5px; color: #bbb; padding: 0 3px; }
+.msg.user .msg-time { text-align: right; }
+
+/* TYPING */
+.typing-dots { display: flex; gap: 4px; padding: 4px 2px; }
+.typing-dots span {
+  width: 7px; height: 7px;
+  background: #ccc; border-radius: 50%;
+  animation: dot 1.2s infinite;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dot {
+  0%,60%,100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}
+
+/* OPTIONS */
+.opts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.opt {
+  padding: 6px 13px; border-radius: 20px;
+  border: 1.5px solid #1a6b5e;
+  background: #f0f9f7; color: #1a6b5e;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.opt:hover { background: #1a6b5e; color: #fff; }
+
+/* WA BUTTON */
+.wa-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 10px; padding: 9px 15px;
+  background: #25d366; color: #fff;
+  border-radius: 10px; font-size: 12.5px; font-weight: 600;
+  text-decoration: none; transition: background 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.wa-btn:hover { background: #1da851; }
+
+/* APPOINTMENT FORM */
+.appt-form {
+  background: #f0f9f7;
+  border: 1px solid #c8e8e3;
+  border-radius: 14px;
+  padding: 14px; margin-top: 10px;
+}
+.appt-title {
+  font-size: 13px; font-weight: 700;
+  color: #1a6b5e; margin-bottom: 10px;
+}
+.appt-inp {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 12px; margin-bottom: 7px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; color: #1a1a1a;
+  outline: none;
+}
+.appt-inp:focus { border-color: #1a6b5e; }
+.appt-inp::placeholder { color: #bbb; }
+.appt-btn {
+  width: 100%; background: #1a6b5e; color: #fff;
+  border: none; border-radius: 8px; padding: 10px;
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  font-weight: 600; cursor: pointer; transition: background 0.15s;
+}
+.appt-btn:hover { background: #145549; }
+
+/* REVIEWS */
+.reviews-wrap {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  padding: 12px; margin-top: 10px;
+}
+.review-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+.review-item:last-child { border-bottom: none; padding-bottom: 0; }
+.review-top {
+  display: flex; justify-content: space-between;
+  margin-bottom: 3px;
+}
+.review-name { font-size: 12.5px; font-weight: 600; color: #1a1a1a; }
+.review-stars { font-size: 11px; color: #f4b400; }
+.review-text { font-size: 12px; color: #666; line-height: 1.4; }
+
+/* INPUT */
+.input-area {
+  padding: 10px 14px;
+  background: #fff;
+  border-top: 1px solid #eee;
+  display: flex; gap: 8px; align-items: center;
+  flex-shrink: 0;
+}
+.text-input {
+  flex: 1;
+  background: #f5f5f5;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px; color: #1a1a1a;
+  outline: none; transition: border-color 0.15s;
+}
+.text-input:focus { border-color: #1a6b5e; background: #fff; }
+.text-input::placeholder { color: #bbb; }
+.send-btn {
+  width: 40px; height: 40px;
+  background: #1a6b5e; border: none;
+  border-radius: 12px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 16px; flex-shrink: 0;
+  transition: background 0.15s;
+}
+.send-btn:hover { background: #145549; }
+.send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* RATING BAR */
+.rating-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 0 0;
+}
+.rating-stars { color: #f4b400; font-size: 14px; }
+.rating-text { font-size: 12px; color: rgba(255,255,255,0.8); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg { animation: fadeUp 0.25s ease; }
+</style>
+</head>
+<body>
+<div class="widget">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <div class="avatar">🦷</div>
+      <div class="header-info">
+        <div class="clinic-title">Omar Dental Clinic</div>
+        <div class="clinic-sub">Dr. Omar — Dental Specialist</div>
+        <div class="online-badge">
+          <div class="online-dot"></div>
+          <div class="online-text">AI Receptionist • Available now</div>
+        </div>
+      </div>
+    </div>
+    <div class="rating-bar">
+      <span class="rating-stars">★★★★★</span>
+      <span class="rating-text">4.9 · 128 patients · Mosmiyat, Karachi</span>
+    </div>
+  </div>
+
+  <!-- INFO BAR -->
+  <div class="info-bar">
+    <div class="info-item">🕐 Mon–Sat, 6–9 PM</div>
+    <div class="info-item">📍 Mosmiyat, Karachi</div>
+    <div class="info-item">🦷 3 Services</div>
+  </div>
+
+  <!-- QUICK BUTTONS -->
+  <div class="quick-row">
+    <div class="qbtn" onclick="quickAsk('Book an appointment')">📅 Appointment</div>
+    <div class="qbtn" onclick="quickAsk('What services do you offer?')">🦷 Services</div>
+    <div class="qbtn" onclick="quickAsk('What are your timings?')">🕐 Timings</div>
+    <div class="qbtn" onclick="quickAsk('Where are you located?')">📍 Location</div>
+    <div class="qbtn" onclick="quickAsk('Show patient reviews')">⭐ Reviews</div>
+    <div class="qbtn" onclick="quickAsk('What are the fees?')">💰 Fees</div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="messages" id="messages">
+    <div class="msg bot">
+      <div class="msg-icon">🦷</div>
+      <div class="msg-content">
+        <div class="bubble">
+          Assalam o Alaikum! 👋 Welcome to <strong>Omar Dental Clinic</strong>.<br><br>
+          I'm Dr. Omar's AI assistant. I can help you book appointments, answer your questions, and connect you with our team. How can I help you today?
+          <div class="opts">
+            <div class="opt" onclick="quickAsk('Book an appointment')">📅 Book Appointment</div>
+            <div class="opt" onclick="quickAsk('What services do you offer?')">🦷 Services</div>
+            <div class="opt" onclick="quickAsk('What are your timings?')">🕐 Timings</div>
+            <div class="opt" onclick="quickAsk('Where are you located?')">📍 Location</div>
+          </div>
+        </div>
+        <div class="msg-time" id="wt"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-area">
+    <input type="text" class="text-input" id="user-input"
+      placeholder="Type your question..."
+      onkeydown="if(event.key==='Enter')sendMessage()">
+    <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+  </div>
+
+</div>
+
+<script>
+const C = {
+  name: "Omar Dental Clinic",
+  doctor: "Dr. Omar",
+  timings: "Monday to Saturday, 6:00 PM to 9:00 PM",
+  services: ["Teeth Cleaning", "Braces", "Teeth Whitening"],
+  location: "Mosmiyat, Karachi",
+  whatsapp: "923302260175",
+  reviews: [
+    { name: "Sarah K.", stars: "★★★★★", text: "Dr. Omar is amazing! My teeth whitening results are incredible. Very professional." },
+    { name: "Ahmed R.", stars: "★★★★★", text: "Got my braces done here. Staff is so friendly and explains everything clearly." },
+    { name: "Fatima M.", stars: "★★★★☆", text: "Great experience! Clean clinic, on-time appointments. Highly recommend!" },
+    { name: "Usman T.", stars: "★★★★★", text: "Best dentist in Mosmiyat! Very gentle and prices are reasonable." }
+  ]
+};
+
+const SYSTEM = `You are a warm, professional AI receptionist for ${C.name} in ${C.location}. Doctor: ${C.doctor}. Timings: ${C.timings}. Services: ${C.services.join(', ')}. Keep replies short (2-3 sentences), friendly and professional. For fees say they vary and suggest contacting via WhatsApp. Respond in same language as patient.`;
+
+let history = [];
+
+document.getElementById('wt').textContent = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+
+function t() { return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}); }
+
+function addBot(html) {
+  const el = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'msg bot';
+  d.innerHTML = `<div class="msg-icon">🦷</div><div class="msg-content"><div class="bubble">${html}</div><div class="msg-time">${t()}</div></div>`;
+  el.appendChild(d); el.scrollTop = el.scrollHeight;
+}
+
+function addUser(text) {
+  const el = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'msg user';
+  d.innerHTML = `<div class="msg-content"><div class="bubble">${text}</div><div class="msg-time">${t()}</div></div>`;
+  el.appendChild(d); el.scrollTop = el.scrollHeight;
+}
+
+function showTyping() {
+  const el = document.getElementById('messages');
+  const d = document.createElement('div');
+  d.className = 'msg bot'; d.id = 'typing';
+  d.innerHTML = `<div class="msg-icon">🦷</div><div class="msg-content"><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div></div>`;
+  el.appendChild(d); el.scrollTop = el.scrollHeight;
+}
+
+function removeTyping() { const t=document.getElementById('typing'); if(t) t.remove(); }
+
+function waBtn(msg) {
+  return `<br><a class="wa-btn" href="https://wa.me/${C.whatsapp}?text=${encodeURIComponent(msg)}" target="_blank">💬 Chat on WhatsApp</a>`;
+}
+
+function apptForm() {
+  return `<div class="appt-form">
+    <div class="appt-title">📅 Book Your Appointment</div>
+    <input class="appt-inp" id="fn" placeholder="Full name">
+    <input class="appt-inp" id="fp" placeholder="Phone number">
+    <select class="appt-inp" id="fs"><option value="">Select treatment</option>${C.services.map(s=>`<option>${s}</option>`).join('')}</select>
+    <input class="appt-inp" id="fd" placeholder="Preferred day (e.g. Monday)">
+    <button class="appt-btn" onclick="submitAppt()">✓ Confirm via WhatsApp</button>
+  </div>`;
+}
+
+function reviewsCard() {
+  return `<div class="reviews-wrap">${C.reviews.map(r=>`
+    <div class="review-item">
+      <div class="review-top"><span class="review-name">${r.name}</span><span class="review-stars">${r.stars}</span></div>
+      <div class="review-text">${r.text}</div>
+    </div>`).join('')}</div>`;
+}
+
+function submitAppt() {
+  const n=document.getElementById('fn')?.value||'';
+  const p=document.getElementById('fp')?.value||'';
+  const s=document.getElementById('fs')?.value||'General';
+  const d=document.getElementById('fd')?.value||'Flexible';
+  if(!n||!p){alert('Please enter name and phone!');return;}
+  const msg=`Assalam o Alaikum! Appointment request for ${C.name}.\n\n👤 Name: ${n}\n📞 Phone: ${p}\n🦷 Treatment: ${s}\n📅 Day: ${d}\n\nPlease confirm. JazakAllah!`;
+  window.open(`https://wa.me/${C.whatsapp}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+async function getReply(msg) {
+  const m = msg.toLowerCase();
+  if (['book','appointment','schedule','visit'].some(k=>m.includes(k)))
+    return `Please fill in your details below to book with Dr. Omar! 😊${apptForm()}`;
+  if (['review','feedback','rating','patient'].some(k=>m.includes(k)))
+    return `Here's what our patients say! ⭐${reviewsCard()}`;
+  if (['location','address','where','kahan'].some(k=>m.includes(k)))
+    return `📍 We are located in <strong>Mosmiyat, Karachi</strong>.${waBtn('Hello! Please share the exact location of Omar Dental Clinic.')}`;
+
+  history.push({role:'user',content:msg});
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYSTEM,messages:history})
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || "Please contact us on WhatsApp for assistance!";
+    history.push({role:'assistant',content:reply});
+    const needsWA = ['fee','cost','price','emergency','pain'].some(k=>m.includes(k));
+    return reply.replace(/\n/g,'<br>') + (needsWA ? waBtn(`Hello! Question: "${msg}"`) : '');
+  } catch {
+    if (['service','treatment'].some(k=>m.includes(k)))
+      return `We offer:<br><br>${C.services.map(s=>`✅ <strong>${s}</strong>`).join('<br>')}<div class="opts"><div class="opt" onclick="quickAsk('Book an appointment')">📅 Book Now</div></div>`;
+    if (['time','hour','open','timing','when','kab','waqt'].some(k=>m.includes(k)))
+      return `🕐 We are open:<br><br><strong>${C.timings}</strong><br><br>We recommend booking in advance! 😊`;
+    if (['fee','cost','price'].some(k=>m.includes(k)))
+      return `Fees vary by treatment.${waBtn('Hello! Please share fee details for Omar Dental.')}`;
+    return `Thanks! Our team will assist you right away.${waBtn(`Hello! Question: "${msg}"`)}`;
+  }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('user-input');
+  const btn = document.getElementById('send-btn');
+  const text = input.value.trim();
+  if (!text || btn.disabled) return;
+  addUser(text); input.value = ''; btn.disabled = true;
+  showTyping();
+  await new Promise(r=>setTimeout(r,700+Math.random()*500));
+  const reply = await getReply(text);
+  removeTyping(); addBot(reply); btn.disabled = false; input.focus();
+}
+
+function quickAsk(text) {
+  document.getElementById('user-input').value = text;
+  sendMessage();
+}
+</script>
+</body>
+</html>
